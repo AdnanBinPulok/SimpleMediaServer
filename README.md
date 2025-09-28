@@ -214,7 +214,7 @@ axios
 1. **Clone the repository:**
 
 ```sh
-git clone <repo-url>
+git clone https://github.com/AdnanBinPulok/SimpleMediaServer
 cd MediaServer\ Public
 ```
 
