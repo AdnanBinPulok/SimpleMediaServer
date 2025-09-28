@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Server</title>
+    <link rel="icon" href="/static/icons/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #22d3ee;
+            --text-primary: #f3f4f6;
+            --text-secondary: #94a3b8;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-hover: #263449;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --accent: #c084fc;
+            --success: #34d399;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 25px 25px, rgba(99, 102, 241, 0.15) 2%, transparent 0%),
+                             radial-gradient(circle at 75px 75px, rgba(34, 211, 238, 0.1) 2%, transparent 0%);
+            background-size: 100px 100px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 20px var(--shadow);
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .logo span {
+            color: var(--secondary);
+        }
+        
+        nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-active {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+        }
+        
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+            padding: 3rem 1rem;
+        }
+        
+        h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            margin-bottom: 1rem;
+            background: linear-gradient(120deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-title i {
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+        
+        .recent-uploads {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px var(--shadow);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .file-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background-color: var(--card-hover);
+        }
+        
+        .file-icon {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .file-card:hover .file-icon {
+            transform: scale(1.1);
+        }
+        
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1.1rem;
+        }
+        
+        .file-info {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            flex-grow: 1;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+        
+        .file-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.07);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .file-btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .file-btn.primary {
+            background-color: var(--primary);
+        }
+        
+        .file-btn.primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .empty-state:hover {
+            border-color: var(--secondary);
+            background: rgba(34, 211, 238, 0.03);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: var (--secondary);
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1.5rem;
+            }
+            
+            .hero {
+                padding: 2rem 0;
+                margin-bottom: 2rem;
+            }
+            
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            main {
+                padding: 1rem;
+            }
+            
+            .hero {
+                padding: 1.5rem 0;
+            }
+            
+            .file-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .file-card {
+                padding: 1.25rem;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .recent-uploads {
+                padding: 1.25rem;
+                border-radius: 12px;
+            }
+            
+            .section-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <main>
+        <section class="hero">
+            <h1>Your Media Storage Solution</h1>
+            <p>Upload, store, and share your files securely. Access your media from anywhere, anytime.</p>
+            <a href="/upload" class="btn">
+                <i class="fas fa-cloud-upload-alt"></i>
+                Upload Files
+            </a>
+        </section>
+
+        <section class="recent-uploads">
+            <h2 class="section-title">
+                <i class="fas fa-photo-film"></i>
+                Recent Uploads
+            </h2>
+
+            <div class="file-grid" id="recent-files">
+                <!-- Files will be populated here via JavaScript -->
+                <div class="empty-state">
+                    <i class="fas fa-file-circle-question"></i>
+                    <p>No files uploaded yet</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {% include 'components/footer.html' %}
+
+    <script>
+        // Function to fetch the recent files from localStorage instead of server
+        function loadRecentFiles() {
+            try {
+                // Get uploads from localStorage
+                const recentUploads = JSON.parse(localStorage.getItem('recent_uploads') || '[]');
+                
+                const fileGrid = document.getElementById('recent-files');
+                
+                if (recentUploads.length > 0) {
+                    // Clear the empty state
+                    fileGrid.innerHTML = '';
+                    
+                    // Populate with files from localStorage
+                    recentUploads.forEach(file => {
+                        const fileCard = createFileCard(file);
+                        fileGrid.appendChild(fileCard);
+                    });
+                } else {
+                    fileGrid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file-circle-question"></i>
+                            <p>No files uploaded yet</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading recent files:', error);
+            }
+        }
+
+        // Create a file card element
+        function createFileCard(file) {
+            const fileCard = document.createElement('div');
+            fileCard.className = 'file-card';
+            
+            // Determine file icon based on MIME type
+            let iconClass = getFileIconClass(file.content_type);
+            
+            fileCard.innerHTML = `
+                <i class="${iconClass} file-icon"></i>
+                <div class="file-name">${file.file_name}</div>
+                <div class="file-info">
+                    ${formatFileSize(file.file_size)}<br>
+                    Uploaded ${formatDate(file.uploaded_at)}<br>
+                    ${file.access_count || 0} views
+                </div>
+                <div class="file-actions">
+                    <a href="/file/view/${file.file_path}" class="file-btn primary" target="_blank">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a href="/file/download/${file.file_path}" class="file-btn">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            `;
+            
+            return fileCard;
+        }
+
+        // Helper function to get icon class based on file type
+        function getFileIconClass(mimeType) {
+            if (!mimeType) return 'fas fa-file';
+            
+            if (mimeType.startsWith('image/')) {
+                return 'fas fa-image';
+            } else if (mimeType.startsWith('video/')) {
+                return 'fas fa-video';
+            } else if (mimeType.startsWith('audio/')) {
+                return 'fas fa-music';
+            } else if (mimeType.includes('pdf')) {
+                return 'fas fa-file-pdf';
+            } else if (mimeType.includes('zip') || mimeType.includes('compressed') || mimeType.includes('archive')) {
+                return 'fas fa-file-zipper';
+            } else if (mimeType.includes('text') || mimeType.includes('document')) {
+                return 'fas fa-file-lines';
+            }
+            
+            return 'fas fa-file';
+        }
+
+        // Format file size into human-readable format
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let i = 0;
+            while (bytes >= 1024 && i < units.length - 1) {
+                bytes /= 1024;
+                i++;
+            }
+            
+            return `${bytes.toFixed(1)} ${units[i]}`;
+        }
+
+        // Format date for display
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Unknown date';
+            
+            const date = new Date(dateStr);
+            return date.toLocaleDateString(undefined, { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Load recent files when the page loads
+        document.addEventListener('DOMContentLoaded', loadRecentFiles);
+    </script>
+</body>
+</html>

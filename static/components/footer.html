@@ -1,0 +1,131 @@
+<footer>
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-logo"><i class="fas fa-photo-film"></i> Media<span>Server</span></div>
+            <p>Your secure file storage and sharing solution</p>
+        </div>
+        <div class="footer-links">
+            <div class="footer-column">
+                <h4><i class="fas fa-compass"></i> Navigation</h4>
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+                <a href="/upload"><i class="fas fa-upload"></i> Upload</a>
+            </div>
+            <div class="footer-column">
+                <h4><i class="fas fa-gavel"></i> Legal</h4>
+                <a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+                <a href="#"><i class="fas fa-file-contract"></i> Terms of Service</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p><i class="far fa-copyright"></i> ${new Date().getFullYear()} MediaServer. All rights reserved.</p>
+        <p class="credits">Created by <a href="https://github.com/adnanbinpulok" target="_blank" rel="noopener noreferrer">Adnan Bin Pulok <i class="fab fa-github"></i></a></p>
+    </div>
+</footer>
+
+<style>
+    footer {
+        background-color: var(--card-bg);
+        margin-top: 2rem;
+        padding: 2rem 0 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .footer-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    .footer-content {
+        flex: 1;
+        min-width: 200px;
+        margin-bottom: 2rem;
+    }
+    
+    .footer-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .footer-logo span {
+        color: var(--secondary);
+    }
+    
+    .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+    
+    .footer-column {
+        min-width: 120px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .footer-column h4 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+    
+    .footer-column a {
+        display: block;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.3s ease;
+    }
+    
+    .footer-column a:hover {
+        color: var(--secondary);
+    }
+    
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center;
+        padding-top: 1.5rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .footer-bottom p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .credits {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    
+    .credits a {
+        color: var(--secondary);
+        text-decoration: none;
+        transition: color 0.2s ease, opacity 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .credits a:hover {
+        opacity: 0.8;
+    }
+    
+    @media (max-width: 768px) {
+        .footer-container {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    // Replace the year placeholder with the current year
+    document.addEventListener('DOMContentLoaded', function() {
+        const yearElements = document.querySelectorAll('.footer-bottom p');
+        yearElements.forEach(element => {
+            element.innerHTML = element.innerHTML.replace('${new Date().getFullYear()}', new Date().getFullYear());
+        });
+    });
+</script>

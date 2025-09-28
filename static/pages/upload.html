@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Files - Media Server</title>
+    <link rel="icon" href="/static/icons/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #22d3ee;
+            --text-primary: #f3f4f6;
+            --text-secondary: #94a3b8;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --accent: #c084fc;
+            --success: #34d399;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 25px 25px, rgba(99, 102, 241, 0.15) 2%, transparent 0%),
+                             radial-gradient(circle at 75px 75px, rgba(34, 211, 238, 0.1) 2%, transparent 0%);
+            background-size: 100px 100px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 20px var(--shadow);
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var (--text-primary);
+        }
+        
+        .logo span {
+            color: var(--secondary);
+        }
+        
+        nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-active {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 5vw, 2rem);
+            flex-grow: 1;
+        }
+
+        .page-title {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            margin-bottom: 1rem;
+        }
+
+        .page-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        .section {
+            background-color: var(--card-bg);
+            border-radius: clamp(8px, 3vw, 12px);
+            padding: clamp(1rem, 4vw, 1.5rem);
+            box-shadow: 0 10px 30px var(--shadow);
+            margin-bottom: clamp(1.5rem, 5vw, 2rem);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px var(--shadow);
+        }
+
+        .section-title {
+            font-size: clamp(1.25rem, 4vw, 1.5rem);
+            margin-bottom: clamp(1rem, 4vw, 1.5rem);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(1.5rem, 5vw, 2rem);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-container:hover {
+            border-color: var(--secondary);
+            background-color: rgba(34, 211, 238, 0.05);
+        }
+
+        .upload-container.drag-over {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: clamp(2rem, 8vw, 4rem);
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        
+        .upload-container:hover .upload-icon {
+            color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .upload-text {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
+            margin-bottom: 1.5rem;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background-color: var(--primary);
+            color: white;
+            padding: clamp(0.6rem, 3vw, 0.75rem) clamp(1rem, 5vw, 1.5rem);
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-btn:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .upload-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        
+        .upload-btn:hover:after {
+            left: 100%;
+        }
+
+        .upload-btn:disabled {
+            background-color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .upload-options {
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .upload-progress {
+            width: 100%;
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .uploaded-files {
+            margin-top: 2rem;
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+            gap: clamp(0.75rem, 3vw, 1rem);
+        }
+
+        .file-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: clamp(0.75rem, 3vw, 1rem);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .file-item:hover {
+            transform: translateY(-3px);
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .file-item.success {
+            border-left: 3px solid var(--success);
+        }
+
+        .file-item.error {
+            border-left: 3px solid var(--error);
+        }
+
+        .file-status {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .file-status.success {
+            background-color: var(--success);
+        }
+
+        .file-status.error {
+            background-color: var(--error);
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-details {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-links {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        .file-link {
+            flex: 1 1 100px;
+            text-align: center;
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .file-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .file-link.primary {
+            background-color: var(--primary);
+        }
+
+        .file-link.primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .compress-file-btn {
+            background-color: var(--accent) !important;
+            border: none;
+            cursor: pointer;
+        }
+
+        .compress-file-btn:hover {
+            background-color: var(--primary) !important;
+        }
+
+        .form-label input[type="checkbox"] {
+            accent-color: var(--secondary);
+            margin-right: 0.5rem;
+        }
+
+        .file-error {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .recent-uploads .section-title {
+            margin-top: 1rem;
+        }
+
+        #api-key-input {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .file-list {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .section {
+                padding: 1.25rem;
+            }
+            
+            .upload-container {
+                padding: 1.5rem 1rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            main {
+                padding: 1rem;
+            }
+            
+            .file-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .file-item {
+                padding: 1rem;
+            }
+            
+            .upload-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .file-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .file-link {
+                flex: 1;
+            }
+            
+            @media (max-width: 360px) {
+                .input-group {
+                    flex-wrap: wrap;
+                }
+                
+                .input-group .form-control {
+                    width: 100%;
+                    border-radius: 8px 8px 0 0;
+                }
+                
+                .input-action {
+                    width: 50%;
+                    border-top: none;
+                    border-left: none;
+                    border-radius: 0;
+                }
+                
+                .input-action:first-of-type {
+                    border-radius: 0 0 0 8px;
+                }
+                
+                .input-action:last-of-type {
+                    border-radius: 0 0 8px 0;
+                }
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .file-list {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --shadow: rgba(0, 0, 0, 0.5);
+            }
+        }
+        
+        .api-key-container {
+            position: relative;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .api-key-container:focus-within {
+            transform: scale(1.01);
+        }
+
+        .input-group {
+            display: flex;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .input-group:focus-within {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .input-group .form-control {
+            background-color: transparent;
+            border: none;
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .input-group .form-control:focus {
+            outline: none;
+        }
+        
+        .input-action {
+            width: 42px;
+            background-color: transparent;
+            border: none;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .input-action:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .key-saved-indicator {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            font-size: 0.8rem;
+            color: var(--success);
+            margin-top: 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(52, 211, 153, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fileAdded {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .file-item.new-upload {
+            animation: fileAdded 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <main>
+        <h1 class="page-title">Upload Files</h1>
+        <p class="page-description">Upload your files to the server and get shareable links.</p>
+
+        <section class="section">
+            <h2 class="section-title">
+                <i class="fas fa-cloud-upload-alt"></i>
+                Upload New File
+            </h2>
+
+            <div class="api-key-container">
+                <div class="input-group">
+                    <input type="password" id="api-key-input" class="form-control" placeholder="Enter API Key" />
+                    <button id="toggle-password-btn" class="input-action" title="Show/Hide API Key">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button id="save-key-btn" class="input-action" title="Save API Key">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+                <div id="key-saved-indicator" class="key-saved-indicator">
+                    <i class="fas fa-check-circle"></i>
+                    API key saved for next time
+                </div>
+            </div>
+
+            <div id="upload-container" class="upload-container">
+                <i class="fas fa-cloud-upload-alt fa-4x upload-icon"></i>
+                <p class="upload-text">Drag and drop files here</p>
+                <p class="upload-hint">or click to select files</p>
+                <input type="file" id="file-input" multiple />
+                <button id="select-files-btn" class="upload-btn">
+                    <i class="fas fa-file-circle-plus"></i>
+                    Select Files
+                </button>
+            </div>
+
+            <div class="upload-options">
+                <div class="form-group">
+                    <label for="expiry-days" class="form-label">Expiry (days)</label>
+                    <input type="number" id="expiry-days" class="form-control" placeholder="Leave empty for no expiry" min="1" />
+                </div>
+            </div>
+
+            <div class="upload-progress" id="upload-progress">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progress-text">Uploading...</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+            </div>
+
+            <button id="upload-btn" class="upload-btn" style="margin-top: 1.5rem;">
+                <i class="fas fa-cloud-arrow-up"></i>
+                Start Upload
+            </button>
+        </section>
+
+        <section class="section uploaded-files" id="uploaded-files-section" style="display: none;">
+            <h2 class="section-title">
+                <i class="fas fa-check-circle"></i>
+                Uploaded Files
+            </h2>
+            <div class="file-list" id="uploaded-files"></div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <i class="fas fa-compress"></i>
+                Compress Image
+            </h2>
+            
+            <div class="form-group">
+                <label for="compress-url" class="form-label">Image URL</label>
+                <div class="input-group">
+                    <input type="text" id="compress-url" class="form-control" placeholder="https://media.gliders.dev/file/view/ea9b7345-411b-4ba8-b47b-5d883f5c8a60.png" />
+                    <button id="paste-url-btn" class="input-action" title="Paste from clipboard">
+                        <i class="fas fa-paste"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="upload-options">
+                <div class="form-group">
+                    <label for="quality" class="form-label">Quality (1-100)</label>
+                    <input type="number" id="quality" class="form-control" value="80" min="1" max="100" />
+                </div>
+                <div class="form-group">
+                    <label for="max-width" class="form-label">Max Width (px)</label>
+                    <input type="number" id="max-width" class="form-control" placeholder="Leave empty for original width" min="1" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="to-webp" checked style="margin-right: 0.5rem;">
+                        Convert to WebP
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="lossless" style="margin-right: 0.5rem;">
+                        Lossless compression
+                    </label>
+                </div>
+            </div>
+
+            <div class="upload-progress" id="compress-progress" style="display: none;">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="compress-progress-bar"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="compress-progress-text">Compressing...</span>
+                </div>
+            </div>
+
+            <button id="compress-btn" class="upload-btn">
+                <i class="fas fa-compress"></i>
+                Compress Image
+            </button>
+
+            <div class="uploaded-files" id="compressed-files-section" style="display: none; margin-top: 2rem;">
+                <h3 class="section-title">
+                    <i class="fas fa-check-circle"></i>
+                    Compressed Image
+                </h3>
+                <div class="file-list" id="compressed-files"></div>
+            </div>
+        </section>
+
+        <section class="section recent-uploads">
+            <h2 class="section-title">
+                <i class="fas fa-history"></i>
+                Recent Uploads
+            </h2>
+            <div class="file-list" id="recent-files"></div>
+        </section>
+    </main>
+
+    {% include 'components/footer.html' %}
+    
+    <script>
+        // Elements
+        const uploadContainer = document.getElementById('upload-container');
+        const fileInput = document.getElementById('file-input');
+        const selectFilesBtn = document.getElementById('select-files-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const uploadProgress = document.getElementById('upload-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const uploadedFilesSection = document.getElementById('uploaded-files-section');
+        const uploadedFilesList = document.getElementById('uploaded-files');
+        const recentFilesList = document.getElementById('recent-files');
+        const expiryDaysInput = document.getElementById('expiry-days');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const togglePasswordBtn = document.getElementById('toggle-password-btn');
+        const saveKeyBtn = document.getElementById('save-key-btn');
+        const savedIndicator = document.getElementById('key-saved-indicator');
+        
+        // Compression elements
+        const compressUrlInput = document.getElementById('compress-url');
+        const pasteUrlBtn = document.getElementById('paste-url-btn');
+        const qualityInput = document.getElementById('quality');
+        const maxWidthInput = document.getElementById('max-width');
+        const toWebpCheckbox = document.getElementById('to-webp');
+        const losslessCheckbox = document.getElementById('lossless');
+        const compressBtn = document.getElementById('compress-btn');
+        const compressProgress = document.getElementById('compress-progress');
+        const compressProgressBar = document.getElementById('compress-progress-bar');
+        const compressProgressText = document.getElementById('compress-progress-text');
+        const compressedFilesSection = document.getElementById('compressed-files-section');
+        const compressedFilesList = document.getElementById('compressed-files');
+
+        // Selected files
+        let selectedFiles = [];
+
+        // Set up the drag and drop functionality
+        uploadContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.add('drag-over');
+        });
+
+        uploadContainer.addEventListener('dragleave', () => {
+            uploadContainer.classList.remove('drag-over');
+        });
+
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.remove('drag-over');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelection(e.dataTransfer.files);
+            }
+        });
+
+        // Setup click to select files
+        selectFilesBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadContainer.addEventListener('click', (e) => {
+            if (e.target !== selectFilesBtn) {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFileSelection(fileInput.files);
+            }
+        });
+
+        // Handle file selection
+        function handleFileSelection(files) {
+            selectedFiles = Array.from(files);
+            updateSelectButton();
+        }
+
+        // Update the select button text based on selected files
+        function updateSelectButton() {
+            if (selectedFiles.length > 0) {
+                selectFilesBtn.innerHTML = `<i class="fas fa-check"></i> ${selectedFiles.length} file(s) selected`;
+            } else {
+                selectFilesBtn.innerHTML = `
+                    <i class="fas fa-file-circle-plus"></i>
+                    Select Files
+                `;
+            }
+        }
+
+        // Handle file upload
+        uploadBtn.addEventListener('click', () => {
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to upload.');
+                return;
+            }
+
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                alert('Please enter an API key.');
+                return;
+            }
+
+            uploadFiles(apiKey);
+        });
+
+        // Handle compression
+        compressBtn.addEventListener('click', async () => {
+            const url = compressUrlInput.value.trim();
+            if (!url) {
+                alert('Please enter an image URL.');
+                return;
+            }
+
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                alert('Please enter an API key.');
+                return;
+            }
+
+            // Extract file path from URL
+            const urlParts = url.split('/');
+            const filePath = urlParts[urlParts.length - 1];
+            
+            if (!filePath) {
+                alert('Invalid URL format. Please use a valid file URL.');
+                return;
+            }
+
+            await compressImage(filePath, apiKey);
+        });
+
+        // Paste URL functionality
+        pasteUrlBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                compressUrlInput.value = text;
+            } catch (err) {
+                console.error('Failed to read clipboard:', err);
+                alert('Failed to paste from clipboard. Please paste manually.');
+            }
+        });
+
+        // Upload the selected files
+        async function uploadFiles(apiKey) {
+            uploadBtn.disabled = true;
+            uploadProgress.style.display = 'block';
+            uploadedFilesSection.style.display = 'block';
+            uploadedFilesList.innerHTML = '';
+
+            const totalFiles = selectedFiles.length;
+            let uploadedCount = 0;
+            let totalBytes = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+            let uploadedBytes = 0;
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const fileName = file.name;
+                
+                // Update progress showing which file is being uploaded
+                updateProgress(uploadedBytes, totalBytes, `Uploading ${fileName} (${i + 1}/${totalFiles})`);
+                
+                try {
+                    const result = await uploadFile(file, apiKey, (progress) => {
+                        // Update progress as each chunk gets uploaded
+                        const currentProgress = uploadedBytes + progress;
+                        updateProgress(currentProgress, totalBytes, 
+                            `Uploading ${fileName} (${i + 1}/${totalFiles}) - ${Math.round(progress / file.size * 100)}%`);
+                    });
+                    
+                    uploadedCount++;
+                    uploadedBytes += file.size;
+                    
+                    // Create file item in the list with enhanced UI feedback
+                    const fileItem = createFileItem(result);
+                    
+                    uploadedFilesList.appendChild(fileItem);
+                    
+                    // Save this upload to localStorage
+                    saveUploadToLocalStorage(result);
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    uploadedBytes += file.size; // Count failed uploads toward progress
+                    
+                    // Create error file item
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item error';
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-status error"></div>
+                        <div class="file-name">${fileName}</div>
+                        <div class="file-details">Upload failed</div>
+                        <div class="file-error">${error.message || 'Unknown error'}</div>
+                    `;
+                    
+                    uploadedFilesList.appendChild(fileItem);
+                }
+                
+                // Update overall progress after each file
+                updateProgress(uploadedBytes, totalBytes, 
+                    `Uploaded ${uploadedCount} of ${totalFiles} files (${Math.round(uploadedBytes / totalBytes * 100)}%)`);
+            }
+
+            // Final update
+            updateProgress(totalBytes, totalBytes, `Uploaded ${uploadedCount} of ${totalFiles} files`);
+            
+            // Reset for the next upload
+            selectedFiles = [];
+            updateSelectButton();
+            fileInput.value = '';
+            
+            // Enable upload button
+            uploadBtn.disabled = false;
+            
+            // Load recent files to update the list
+            loadRecentUploadsFromLocalStorage();
+        }
+
+        // Update the progress bar and text
+        function updateProgress(current, total, message) {
+            const percentage = Math.round((current / total) * 100);
+            progressBar.style.width = `${percentage}%`;
+            progressText.textContent = message;
+            progressPercentage.textContent = `${percentage}%`;
+            
+            // Add color transition based on progress
+            if (percentage < 30) {
+                progressBar.style.backgroundColor = 'var(--primary)';
+            } else if (percentage < 70) {
+                progressBar.style.backgroundColor = 'var(--accent)';
+            } else {
+                progressBar.style.backgroundColor = 'var(--success)';
+            }
+        }
+
+        // Upload a single file with progress tracking
+        async function uploadFile(file, apiKey, onProgress) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const expiryDays = expiryDaysInput.value;
+            if (expiryDays) {
+                formData.append('expiry_days', expiryDays);
+            }
+            
+            // Use XMLHttpRequest for progress tracking
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                
+                // Set up progress tracking
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const progress = e.loaded;
+                        onProgress(progress);
+                    }
+                });
+                
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            resolve(response);
+                        } catch (e) {
+                            reject(new Error('Invalid response format'));
+                        }
+                    } else {
+                        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+                    }
+                });
+                
+                xhr.addEventListener('error', () => {
+                    reject(new Error('Network error during upload'));
+                });
+                
+                xhr.addEventListener('abort', () => {
+                    reject(new Error('Upload aborted'));
+                });
+                
+                xhr.open('POST', '/api/upload');
+                xhr.setRequestHeader('Authorization', `Bearer ${apiKey}`);
+                xhr.send(formData);
+            });
+        }
+
+        // Format file size for display
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let i = 0;
+            while (bytes >= 1024 && i < units.length - 1) {
+                bytes /= 1024;
+                i++;
+            }
+            
+            return `${bytes.toFixed(1)} ${units[i]}`;
+        }
+
+        // Compress image function
+        async function compressImage(filePath, apiKey) {
+            compressBtn.disabled = true;
+            compressProgress.style.display = 'block';
+            compressedFilesSection.style.display = 'block';
+            compressedFilesList.innerHTML = '';
+
+            const quality = parseInt(qualityInput.value) || 80;
+            const maxWidth = maxWidthInput.value ? parseInt(maxWidthInput.value) : null;
+            const toWebp = toWebpCheckbox.checked;
+            const lossless = losslessCheckbox.checked;
+
+            const requestData = {
+                quality: quality,
+                to_webp: toWebp,
+                lossless: lossless
+            };
+
+            if (maxWidth) {
+                requestData.max_width = maxWidth;
+            }
+
+            try {
+                compressProgressText.textContent = 'Compressing image...';
+                compressProgressBar.style.width = '50%';
+
+                const response = await fetch(`/api/compress/${filePath}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Compression failed: ${response.status} ${errorText}`);
+                }
+
+                const result = await response.json();
+                
+                compressProgressBar.style.width = '100%';
+                compressProgressText.textContent = 'Compression completed!';
+
+                // Create compressed file item - simplified since API only returns success message
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item success new-upload';
+                
+                // Generate the compressed file name (usually adds _compressed or changes extension)
+                const originalFileName = filePath;
+                const compressedFileName = toWebp ? 
+                    originalFileName.replace(/\.[^.]+$/, '_compressed.webp') : 
+                    originalFileName.replace(/(\.[^.]+)$/, '_compressed$1');
+                
+                fileItem.innerHTML = `
+                    <div class="file-status success"></div>
+                    <div class="file-name">${compressedFileName}</div>
+                    <div class="file-details">
+                        ${result.message}<br>
+                        Quality: ${quality}%<br>
+                        ${maxWidth ? `Max Width: ${maxWidth}px<br>` : ''}
+                        Format: ${toWebp ? 'WebP' : 'Original'}${lossless ? ' (Lossless)' : ''}
+                    </div>
+                    <div class="file-links">
+                        <a href="/file/view/${compressedFileName}" target="_blank" class="file-link primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="/file/download/${compressedFileName}" class="file-link">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                `;
+                
+                compressedFilesList.appendChild(fileItem);
+
+                // Reset compression form
+                compressUrlInput.value = '';
+                
+            } catch (error) {
+                console.error('Compression error:', error);
+                
+                const errorItem = document.createElement('div');
+                errorItem.className = 'file-item error';
+                errorItem.innerHTML = `
+                    <div class="file-status error"></div>
+                    <div class="file-name">Compression Failed</div>
+                    <div class="file-error">${error.message}</div>
+                `;
+                
+                compressedFilesList.appendChild(errorItem);
+            } finally {
+                compressBtn.disabled = false;
+            }
+        }
+
+        // Load recent uploads from localStorage instead of API
+        function loadRecentUploadsFromLocalStorage() {
+            try {
+                // Get uploads from localStorage
+                const recentUploads = JSON.parse(localStorage.getItem('recent_uploads') || '[]');
+                
+                recentFilesList.innerHTML = '';
+                
+                if (recentUploads.length > 0) {
+                    recentUploads.forEach(file => {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        
+                        // Check if file is an image
+                        const isImage = file.content_type && file.content_type.startsWith('image/');
+                        
+                        fileItem.innerHTML = `
+                            <div class="file-name">${file.file_name}</div>
+                            <div class="file-details">
+                                ${formatFileSize(file.file_size)}<br>
+                                Uploaded: ${new Date(file.uploaded_at).toLocaleDateString()}<br>
+                                Type: ${file.content_type || 'Unknown'}
+                            </div>
+                            <div class="file-links">
+                                <a href="/file/view/${file.file_path}" target="_blank" class="file-link primary">View</a>
+                                <a href="/file/download/${file.file_path}" class="file-link">Download</a>
+                                ${isImage ? `<button class="file-link compress-file-btn" data-file-path="${file.file_path}" title="Compress this image">
+                                    <i class="fas fa-compress"></i> Compress
+                                </button>` : ''}
+                            </div>
+                        `;
+                        
+                        recentFilesList.appendChild(fileItem);
+                    });
+
+                    // Add event listeners for compress buttons
+                    document.querySelectorAll('.compress-file-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const filePath = btn.getAttribute('data-file-path');
+                            const fileUrl = `${window.location.origin}/file/view/${filePath}`;
+                            compressUrlInput.value = fileUrl;
+                            
+                            // Scroll to compression section
+                            document.querySelector('.section:has(#compress-url)').scrollIntoView({ 
+                                behavior: 'smooth' 
+                            });
+                            
+                            // Add visual feedback
+                            compressUrlInput.focus();
+                            compressUrlInput.style.borderColor = 'var(--success)';
+                            setTimeout(() => {
+                                compressUrlInput.style.borderColor = '';
+                            }, 2000);
+                        });
+                    });
+                } else {
+                    recentFilesList.innerHTML = '<div class="file-item">No recent uploads found.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading recent uploads from localStorage:', error);
+                recentFilesList.innerHTML = `<div class="file-item error">Error loading recent uploads.</div>`;
+            }
+        }
+
+        // Save upload to localStorage
+        function saveUploadToLocalStorage(fileData) {
+            try {
+                // Get existing uploads
+                let recentUploads = JSON.parse(localStorage.getItem('recent_uploads') || '[]');
+                
+                // Add new upload to the beginning
+                recentUploads.unshift({
+                    file_name: fileData.file_name,
+                    file_size: fileData.file_size,
+                    file_path: fileData.file_url.split('/').pop(),
+                    content_type: fileData.content_type,
+                    uploaded_at: new Date().toISOString(),
+                    access_count: 0
+                });
+                
+                // Keep only the 5 most recent uploads
+                if (recentUploads.length > 5) {
+                    recentUploads = recentUploads.slice(0, 5);
+                }
+                
+                // Save back to localStorage
+                localStorage.setItem('recent_uploads', JSON.stringify(recentUploads));
+            } catch (error) {
+                console.error('Error saving upload to localStorage:', error);
+            }
+        }
+
+        // Load recent files when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('api_key');
+            if (savedKey) {
+                apiKeyInput.value = savedKey;
+            }
+            
+            // Load recent files from localStorage
+            loadRecentUploadsFromLocalStorage();
+        });
+        
+        // Toggle password visibility
+        togglePasswordBtn.addEventListener('click', () => {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                togglePasswordBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                apiKeyInput.type = 'password';
+                togglePasswordBtn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        });
+        
+        // Save API key to local storage
+        saveKeyBtn.addEventListener('click', () => {
+            const keyValue = apiKeyInput.value.trim();
+            if (keyValue) {
+                localStorage.setItem('api_key', keyValue);
+                
+                // Show saved indicator
+                savedIndicator.style.display = 'flex';
+                
+                // Hide indicator after 3 seconds
+                setTimeout(() => {
+                    savedIndicator.style.display = 'none';
+                }, 3000);
+            }
+        });
+        
+        // Add animation for newly uploaded files
+        function createFileItem(result, isSuccess = true) {
+            const fileItem = document.createElement('div');
+            fileItem.className = isSuccess ? 'file-item success new-upload' : 'file-item error new-upload';
+            
+            const fileUrl = result.file_url;
+            const downloadUrl = result.download_url;
+            const isImage = result.content_type && result.content_type.startsWith('image/');
+            
+            fileItem.innerHTML = `
+                <div class="file-status ${isSuccess ? 'success' : 'error'}"></div>
+                <div class="file-name">${result.file_name}</div>
+                <div class="file-details">
+                    ${formatFileSize(result.file_size)}<br>
+                    ${result.content_type}
+                </div>
+                <div class="file-links">
+                    <a href="${fileUrl}" target="_blank" class="file-link primary">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a href="${downloadUrl}" class="file-link">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    ${isImage ? `<button class="file-link compress-file-btn" onclick="fillCompressUrl('${fileUrl}')">
+                        <i class="fas fa-compress"></i> Compress
+                    </button>` : ''}
+                </div>
+            `;
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                fileItem.classList.remove('new-upload');
+            }, 500);
+            
+            return fileItem;
+        }
+
+        // Helper function to fill compress URL input
+        function fillCompressUrl(url) {
+            compressUrlInput.value = url;
+            
+            // Scroll to compression section
+            document.querySelector('.section:has(#compress-url)').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+            
+            // Add visual feedback
+            compressUrlInput.focus();
+            compressUrlInput.style.borderColor = 'var(--success)';
+            setTimeout(() => {
+                compressUrlInput.style.borderColor = '';
+            }, 2000);
+        }
+        
+        // Add responsive behavior for window resizing
+        window.addEventListener('resize', function() {
+            // Adjust UI elements for different screen sizes if needed
+            const screenWidth = window.innerWidth;
+            const fileItems = document.querySelectorAll('.file-item');
+            
+            if (screenWidth < 576) {
+                // Apply mobile-specific adjustments if needed
+            } else {
+                // Apply desktop-specific adjustments if needed
+            }
+        });
+    </script>
+</body>
+</html>

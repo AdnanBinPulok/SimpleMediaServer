@@ -1,0 +1,41 @@
+<header>
+    <a href="/" class="logo-link">
+        <div class="logo"><i class="fas fa-photo-film"></i> Media<span>Server</span></div>
+    </a>
+    <nav>
+        <a href="/" id="nav-home"><i class="fas fa-home"></i> Home</a>
+        <a href="/upload" id="nav-upload"><i class="fas fa-upload"></i> Upload</a>
+    </nav>
+</header>
+
+<style>
+    .logo-link {
+        text-decoration: none;
+        color: inherit;
+        transition: opacity 0.2s ease;
+    }
+    
+    .logo-link:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<script>
+    // Set active navigation item based on current page
+    document.addEventListener('DOMContentLoaded', function() {
+        const path = window.location.pathname;
+        const navHome = document.getElementById('nav-home');
+        const navUpload = document.getElementById('nav-upload');
+        
+        // Reset classes
+        navHome.className = '';
+        navUpload.className = '';
+        
+        // Set active class based on current path
+        if (path === '/' || path === '') {
+            navHome.className = 'nav-active';
+        } else if (path.includes('/upload')) {
+            navUpload.className = 'nav-active';
+        }
+    });
+</script>
