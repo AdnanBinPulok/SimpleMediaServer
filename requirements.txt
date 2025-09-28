@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+aiosqlite
+python-multipart
+python-dotenv
+pytz
+colorama
+python-jose
+websockets
+aiofiles
+jinja2
